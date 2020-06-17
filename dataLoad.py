@@ -21,7 +21,7 @@ cur.executescript('''
 
     CREATE TABLE IF NOT EXISTS paslaugos (id INTEGER PRIMARY KEY NOT NULL, pasl_kodas INTEGER, pasl_pavadinimas TEXT);
 
-    CREATE TABLE IF NOT EXISTS gydytojai (id INTEGER NOT NULL PRIMARY KEY, spaudo_nr NUMERIC UNIQUET, pavarde TEXT);
+    CREATE TABLE IF NOT EXISTS gydytojai (id INTEGER PRIMARY KEY NOT NULL, spaudo_nr NUMERIC UNIQUET, pavarde TEXT);
 
     CREATE TABLE IF NOT EXISTS ziniarastis (id INTEGER NOT NULL PRIMARY KEY, paslauga TEXT, specialistas TEXT, viso_apsilan INTEGER, viso_123_be_N INTEGER, del_ligos_L INTEGER, profilak_Pr INTEGER, mokami_is_viso INTEGER, mokami_is_ju_Pr INTEGER, kons_viso INTEGER, kons_be_siun INTEGER, kons_del_disp INTEGER, kons_but_pag INTEGER, data DATE, tlk TEXT)
                   ''')
@@ -46,14 +46,29 @@ def loadZiniarastis():
             continue
         else:
             rowData = row[0].split(';')
+            print(rowData[1])
             pasl_kodas = re.compile(r'(\d\d\d\d)').search(rowData[0]).groups()[0]
 
             pasl_pav = re.compile(r'(\D+)').search(rowData[0]).groups()[0]
 
             pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
-            print(pasl_id)
+    
             if pasl_id is None:
                 cur.execute('INSERT INTO paslaugos (pasl_kodas, pasl_pavadinimas) VALUES (?, ?)', (pasl_kodas, pasl_pav))
+
+                print('Inserted in paslaugos table ' + pasl_kodas + ' '+ pasl_pav)
+
+                pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
+
+            spaudo_nr = re.compile(r'(\d+)').search(rowData[1]).groups()[0]
+
+            dr_surname = re.compile(r'(\D+)').search(rowData[1]).groups()[0]
+
+
+            spec_id = cur.execute('SELECT id FROM gydytojai WHERE spaudo_nr =?', (spaudo_nr,)).fetchone()
+
+            if spec_id is None:
+                cur.execute('INSERT INTO gydytojai (spaudo_nr, pavarde) VALUES (?, ?)', (spaudo_nr, dr_surname))
 
                 print('Inserted in paslaugos table ' + pasl_kodas + ' '+ pasl_pav)
 
