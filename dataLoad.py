@@ -95,11 +95,11 @@ def loadZiniarastis():
             consult_for_dispan = rowData[13]
             consult_for_emerg = rowData[14]
             
-
-            
-            
-            
-            
+            cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id, spec_id, all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))
+            # try:
+            #     cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, vlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id, spec_id, all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg))
+            # except:
+            #     print("Something went wrong")
 
     #conn.commit()
 loadZiniarastis()
