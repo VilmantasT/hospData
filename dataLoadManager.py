@@ -5,6 +5,7 @@ Spyder Editor
 File for tables creation and data loading to sqlite3 database from csv and pdf files.
 """
 import loadZiniarastis
+import loadDetali
 
 def dataLoader(conn, cur):
     print()
@@ -15,6 +16,6 @@ def dataLoader(conn, cur):
     if choice == '1':
         loadZiniarastis.loadZiniarastis(conn, cur)
     elif choice == '2':
-        loadDetali()
+        loadDetali.loadDetali(conn, cur)
     else:
         print("Please enter a numer 1 or 2")

@@ -1,6 +1,8 @@
 import codecs
 import csv
 import re
+import traceback
+import logging
 
 def loadZiniarastis(conn, cur):
     file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
@@ -75,12 +77,27 @@ def loadZiniarastis(conn, cur):
             consult_for_dispan = rowData[13]
             consult_for_emerg = rowData[14]
 
+            newData = [pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk]
 
             dataExists = cur.execute('SELECT * FROM ziniarastis WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
 
+
+
             if dataExists:
-                print(dataExists)
-            else:
+                oldData = list(dataExists)[1:]
+                for i in range(len(newData)):
+                    if newData[i] != oldData[i]:
+                        try:
+                            cur.execute("UPDATE ziniarastis SET viso_apsilan = ?, viso_123_be_N=?, del_ligos_L=?, profilak_Pr=?, mokami_is_viso=?, mokami_is_ju_Pr=?, kons_viso=?, kons_be_siun=?, kons_del_disp=?, kons_but_pag=? WHERE paslauga = ? AND specialistas = ? AND data =? AND tlk = ?", (all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, pasl_id[0], spec_id[0], date, tlk))
+
+                            # print("Record Updated!", newData[i])
+
+                            conn.commit()
+                        except Exception as e:
+                            logging.error(traceback.format_exc())
+                    else:
+                        continue
+            elif not dataExists:
                 cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))
 
                 print("Added to ziniarastis")
