@@ -4,27 +4,10 @@ Spyder Editor
 
 File for tables creation and data loading to sqlite3 database from csv and pdf files.
 """
-
-import sqlite3
-import csv
-import datetime
-import re
-import codecs
-
-conn = sqlite3.connect('hospitalData.sqlite')
-
-cur = conn.cursor()
-
-cur.executescript('''
-    CREATE TABLE IF NOT EXISTS amb_detali
-    (id INTEGER NOT NULL PRIMARY KEY, laikotarpis TEXT, pasl_kodas INTEGER, balo_verte INTEGER, baz_kaina_balais NUMERIC, pac_skaicius NUMERIC, apm_pasl_skaicius INTEGER, suma_balais NUMERIC, suma_eurais NUMERIC);
-
-    CREATE TABLE IF NOT EXISTS paslaugos (id INTEGER PRIMARY KEY NOT NULL, pasl_kodas INTEGER, pasl_pavadinimas TEXT);
-
-    CREATE TABLE IF NOT EXISTS gydytojai (id INTEGER PRIMARY KEY NOT NULL, spaudo_nr NUMERIC UNIQUET, pavarde TEXT);
-
-    CREATE TABLE IF NOT EXISTS ziniarastis (id INTEGER NOT NULL PRIMARY KEY, paslauga INTEGER, specialistas INTEGER, viso_apsilan INTEGER, viso_123_be_N INTEGER, del_ligos_L INTEGER, profilak_Pr INTEGER, mokami_is_viso INTEGER, mokami_is_ju_Pr INTEGER, kons_viso INTEGER, kons_be_siun INTEGER, kons_del_disp INTEGER, kons_but_pag INTEGER, data TEXT, tlk TEXT, FOREIGN KEY(paslauga) REFERENCES paslaugos(id), FOREIGN KEY(specialistas) REFERENCES gydytojai(id))
-                  ''')
+def dataLoader():
+    print()
+    print()
+    print("What data do you want to upload?".rjust(5))
 
 def loadZiniarastis():
     file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
@@ -41,7 +24,7 @@ def loadZiniarastis():
     # date = datetime.date(int(lastRowDate[0]), int(lastRowDate[1]), int(lastRowDate[2]))
     date = list(fileReader)[-1][2].split(';')[2]
 
-  
+
     file.seek(0)
     fileReader = csv.reader(file)
 
@@ -57,7 +40,7 @@ def loadZiniarastis():
             pasl_kodas = re.compile(r'(\d\d\d\d)').search(rowData[0]).groups()[0]
 
             pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
-       
+
 
             if pasl_id is None:
                 pasl_pav = re.compile(r'(\D+)').search(rowData[0]).groups()[0]
@@ -74,7 +57,7 @@ def loadZiniarastis():
             spaudo_nr = re.compile(r'(\d+)').search(rowData[1]).groups()[0]
 
             spec_id = cur.execute('SELECT id FROM gydytojai WHERE spaudo_nr =?', (spaudo_nr,)).fetchone()
-       
+
 
 
             if spec_id is None:
@@ -101,20 +84,12 @@ def loadZiniarastis():
 
 
             dataExists = cur.execute('SELECT * FROM ziniarastis WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
-            
+
             if dataExists:
                 print(dataExists)
             else:
                 cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))
-                
-                print("Added to ziniarastis")
-                
-                conn.commit()
-            # try:
-            #     cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, vlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id, spec_id, all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg))
-            # except:
-            #     print("Something went wrong")
 
-    #conn.commit()
-loadZiniarastis()
-conn.close()
+                print("Added to ziniarastis")
+
+                conn.commit()
