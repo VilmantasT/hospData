@@ -6,11 +6,9 @@ File for tables creation and data loading to sqlite3 database from csv and pdf f
 """
 
 import sqlite3
-import csv
 import datetime
 import re
-import codecs
-from dataLoad import dataLoader
+import dataLoadManager
 
 conn = sqlite3.connect('hospitalData.sqlite')
 
@@ -35,7 +33,7 @@ print("2. Get Data".rjust(5))
 action = input("Enter a number:")
 
 if action == '1':
-    dataLoader()
+    dataLoadManager.dataLoader(conn, cur)
 elif action == '2':
     pass
 conn.close()
