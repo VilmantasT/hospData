@@ -3,6 +3,7 @@ import csv
 import re
 import traceback
 import logging
+from addServiceAndSpecialist import addService, addSpecialist
 
 def loadZiniarastis(conn, cur):
     file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
@@ -11,7 +12,6 @@ def loadZiniarastis(conn, cur):
 
     file.seek(0)
     tlk = (list(fileReader)[-1][0].split(";")[0])
-
 
     file.seek(0)
     # lastRowDate = list(fileReader)[-1][2].split(';')[1].split('-')
@@ -36,35 +36,20 @@ def loadZiniarastis(conn, cur):
 
             pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
 
-
             if pasl_id is None:
                 pasl_pav = re.compile(r'(\D+)').search(rowData[0]).groups()[0]
 
-
-                cur.execute('INSERT INTO paslaugos (pasl_kodas, pasl_pavadinimas) VALUES (?, ?)', (pasl_kodas, pasl_pav))
-
-                print('Inserted in paslaugos table ' + pasl_kodas + ' '+ pasl_pav)
-
-                conn.commit()
-                pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
-
+                pasl_id = addService(conn, cur, pasl_kodas, pasl_pav)
 
             spaudo_nr = re.compile(r'(\d+)').search(rowData[1]).groups()[0]
 
             spec_id = cur.execute('SELECT id FROM gydytojai WHERE spaudo_nr =?', (spaudo_nr,)).fetchone()
 
-
-
             if spec_id is None:
 
                 dr_surname = re.compile(r'(\D+)').search(rowData[1]).groups()[0]
 
-                cur.execute('INSERT INTO gydytojai (spaudo_nr, pavarde) VALUES (?, ?)', (spaudo_nr, dr_surname))
-
-                print('Inserted in gydytojai table ' + spaudo_nr + ' '+ dr_surname)
-
-                conn.commit()
-                spec_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
+                spec_id = addSpecialist(conn, cur, spaudo_nr, dr_surname)
 
             all_visits = rowData[2]
             all_123_w_N = rowData[3]
@@ -80,8 +65,6 @@ def loadZiniarastis(conn, cur):
             newData = [pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk]
 
             dataExists = cur.execute('SELECT * FROM ziniarastis WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
-
-
 
             if dataExists:
                 oldData = list(dataExists)[1:]

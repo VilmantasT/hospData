@@ -4,6 +4,7 @@ import re
 import traceback
 import logging
 import sys
+from addServiceAndSpecialist import addService, addSpecialist
 
 def loadDetali(conn, cur):
     file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
@@ -15,13 +16,25 @@ def loadDetali(conn, cur):
 
     for row in fileReader:
 
-        if fileReader.line_num < 7 or fileReader.line_num == fileLength - 1:
+        if fileReader.line_num < 7 or fileReader.line_num >= fileLength - 2:
             continue
         else:
             rowData = ','.join(row)
-            re.compile(r'^20.*')
-            print(rowData)
-        #
+            extract = re.compile(r'(\d+-\d\d).+(\d\d\d\d;.+)')
+            foundData = extract.search(rowData)
+            try:
+                serviceTime = foundData.group(1)
+                listedData = foundData.group(2).split(";")
+
+                serviceCode = listedData[0]
+                serviceValue = listedData[2]
+                servicePrice = listedData[3]
+                service = listedData[8]
+                servicePrice = listedData[8]
+
+            except:
+                print("*************Bad line!**************************")
+                print(foundData)
         #     pasl_kodas = re.compile(r'(\d\d\d\d)').search(rowData[0]).groups()[0]
         #
         #     pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
