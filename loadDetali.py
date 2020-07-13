@@ -27,10 +27,26 @@ def loadDetali(conn, cur):
                 listedData = foundData.group(2).split(";")
 
                 serviceCode = listedData[0]
+
+                serviceId = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (serviceCode,)).fetchone()
+
+                if serviceId is None:
+                    serviceName = listedData[1]
+
+                    serviceId = addService(conn, cur, serviceCode, serviceName)
+
                 serviceValue = listedData[2]
                 servicePrice = listedData[3]
-                service = listedData[8]
-                servicePrice = listedData[8]
+                patientsCount = listedData[4]
+                servicesCount = listedData[5]
+                sumOfPoints = listedData[6]
+                sumOfEuros = listedData[7]
+
+                newData = [serviceTime, serviceId, serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros]
+
+                dataExists = cur.execute('')
+
+
 
             except:
                 print("*************Bad line!**************************")
