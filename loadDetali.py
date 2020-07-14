@@ -44,13 +44,22 @@ def loadDetali(conn, cur):
 
                 newData = [serviceTime, serviceId, serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros]
 
-                dataExists = cur.execute('')
+                dataExists = cur.execute('SELECT * FROM amb_detali WHERE laikotarpis = ? AND pasl_kodas = ?', (serviceTime, serviceCode)).fetchone()
 
+                if dataExists:
+                    print(list(dataExists))
 
+                elif not dataExists:
+                    print("Inserting")
+                    cur.execute('INSERT INTO amb_detali(laikotarpis, pasl_kodas, balo_verte, baz_kaina_balais, pac_skaicius, apm_pasl_skaicius, suma_balais, suma_eurais) VALUES(?,?,?,?,?,?,?,?)', (serviceTime, serviceId[0], serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros))
+
+                    conn.commit()
+
+                    print("Inserted into amb_detali")
 
             except:
                 print("*************Bad line!**************************")
-                print(foundData)
+                # print(foundData)
         #     pasl_kodas = re.compile(r'(\d\d\d\d)').search(rowData[0]).groups()[0]
         #
         #     pasl_id = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
