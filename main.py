@@ -6,8 +6,6 @@ File for tables creation and data loading to sqlite3 database from csv and pdf f
 """
 
 import sqlite3
-import datetime
-import re
 import dataLoadManager
 
 conn = sqlite3.connect('hospitalData.sqlite')

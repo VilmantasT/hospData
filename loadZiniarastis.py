@@ -4,6 +4,7 @@ import re
 import traceback
 import logging
 from addServiceAndSpecialist import addService, addSpecialist
+from dumpDataToJson
 
 def loadZiniarastis(conn, cur):
     file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
