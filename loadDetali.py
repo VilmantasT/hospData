@@ -50,7 +50,7 @@ def loadDetali(conn, cur):
                     print(list(dataExists))
 
                 elif not dataExists:
-                    print("Inserting")
+        
                     cur.execute('INSERT INTO amb_detali(laikotarpis, pasl_kodas, balo_verte, baz_kaina_balais, pac_skaicius, apm_pasl_skaicius, suma_balais, suma_eurais) VALUES(?,?,?,?,?,?,?,?)', (serviceTime, serviceId[0], serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros))
 
                     conn.commit()
