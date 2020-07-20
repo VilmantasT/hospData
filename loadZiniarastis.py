@@ -4,7 +4,7 @@ import re
 import traceback
 import logging
 from addServiceAndSpecialist import addService, addSpecialist
-from dumpDataToJson
+import dumpDataToJson
 
 def loadZiniarastis(conn, cur):
     file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
@@ -68,18 +68,22 @@ def loadZiniarastis(conn, cur):
             dataExists = cur.execute('SELECT * FROM ziniarastis WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
 
             if dataExists:
-                oldData = list(dataExists)[1:]
-                for i in range(len(newData)):
-                    if newData[i] != oldData[i]:
+                oldData = list(dataExists)[3:]
+                newDataUpdate = newData[2:-2]
+
+                for i in range(len(newDataUpdate)-2):
+                    if int(newDataUpdate[i]) != oldData[i]:
+
                         try:
                             cur.execute("UPDATE ziniarastis SET viso_apsilan = ?, viso_123_be_N=?, del_ligos_L=?, profilak_Pr=?, mokami_is_viso=?, mokami_is_ju_Pr=?, kons_viso=?, kons_be_siun=?, kons_del_disp=?, kons_but_pag=? WHERE paslauga = ? AND specialistas = ? AND data =? AND tlk = ?", (all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, pasl_id[0], spec_id[0], date, tlk))
 
-                            # print("Record Updated!", newData[i])
+                            print("Record Updated!")
 
                             conn.commit()
                         except Exception as e:
                             logging.error(traceback.format_exc())
                     else:
+                        print("Data identical. Continue")
                         continue
             elif not dataExists:
                 cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))

@@ -8,9 +8,9 @@ def addService(conn, cur, pasl_kodas, pasl_pav):
     return cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (pasl_kodas,)).fetchone()
 
 def addSpecialist(conn, cur, sign, surname):
-    cur.execute('INSERT INTO gydytojai (spaudo_nr, pavarde) VALUES (?, ?)', (spaudo_nr, dr_surname))
+    cur.execute('INSERT INTO gydytojai (spaudo_nr, pavarde) VALUES (?, ?)', (sign, surname))
 
-    print('Inserted in gydytojai table ' + spaudo_nr + ' '+ dr_surname)
+    print('Inserted in gydytojai table ' + sign + ' '+ surname)
 
     conn.commit()
 
