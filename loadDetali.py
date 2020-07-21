@@ -19,8 +19,10 @@ def loadDetali(conn, cur):
         if fileReader.line_num < 7 or fileReader.line_num >= fileLength - 2:
             continue
         else:
+
             rowData = ','.join(row)
-            extract = re.compile(r'(\d+-\d\d).+(\d\d\d\d;.+)')
+
+            extract = re.compile(r'(\d\d\d\d-\d\d).+;T;(\d\d\d\d;.+)')
             foundData = extract.search(rowData)
             try:
                 serviceTime = foundData.group(1)
@@ -31,8 +33,10 @@ def loadDetali(conn, cur):
                 serviceId = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (serviceCode,)).fetchone()
 
                 if serviceId is None:
-                    serviceName = listedData[1]
+                    print(listedData)
 
+                    serviceName = listedData[1]
+                    print("Name", serviceName)
                     serviceId = addService(conn, cur, serviceCode, serviceName)
 
                 serviceValue = listedData[2]
@@ -42,13 +46,18 @@ def loadDetali(conn, cur):
                 sumOfPoints = listedData[6]
                 sumOfEuros = listedData[7]
 
-                newData = [serviceTime, serviceId, serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros]
+                newData = [serviceTime, serviceId[0], serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros]
+
 
                 dataExists = cur.execute('SELECT * FROM amb_detali WHERE laikotarpis = ? AND pasl_kodas = ?', (serviceTime, serviceId)).fetchone()
+                #
+                # except:
+                #     dataExists = False
+                print(dataExists)
 
                 if dataExists:
-                    oldData = list(dataExists)[2:]
-                    newDataUpdate = newData[2:]
+                    oldData = list(dataExists)[3:]
+                    newDataUpdate = newData[3:]
 
                     for i in range(len(newDataUpdate)):
                         if int(newDataUpdate[i]) != oldData[i]:
