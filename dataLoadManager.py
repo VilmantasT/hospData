@@ -8,13 +8,15 @@ import loadZiniarastis
 import loadDetali
 
 def dataLoader(conn, cur):
-    print()
-    print()
-    print("From what source you want to upload data?".rjust(5))
-    choice = input("Enter 1 - Upload from Ziniarastis; 2 - Upload from Detali")
+    print("From what source you want to upload data?")
+    raportChoice = input("Enter 1 - Upload from Ziniarastis; 2 - Upload from Detali ")
 
-    if choice == '1':
-        loadZiniarastis.loadZiniarastis(conn, cur)
+    if raportChoice == '1':
+        newsChoice = input("Enter 1 - Upload newsRaport with temporary data; 2 - Upload newsRaport with permanent data ")
+        if newsChoice == '1':
+            loadZiniarastis.loadZiniarastis(conn, cur, 'temp')
+        elif newsChoice == '2':
+            loadZiniarastis.loadZiniarastis(conn, cur, 'perm')
     elif choice == '2':
         loadDetali.loadDetali(conn, cur)
     else:

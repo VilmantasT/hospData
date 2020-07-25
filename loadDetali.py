@@ -4,6 +4,7 @@ import re
 import traceback
 import logging
 import sys
+import datetime
 from addServiceAndSpecialist import addService, addSpecialist
 
 def loadDetali(conn, cur):
@@ -20,7 +21,7 @@ def loadDetali(conn, cur):
             continue
         else:
 
-            rowData = ','.join(row)
+            rowData = '.'.join(row)
 
             extract = re.compile(r'(\d\d\d\d-\d\d).+;T;(\d\d\d\d;.+)')
             foundData = extract.search(rowData)
@@ -33,10 +34,8 @@ def loadDetali(conn, cur):
                 serviceId = cur.execute('SELECT id FROM paslaugos WHERE pasl_kodas = ?', (serviceCode,)).fetchone()
 
                 if serviceId is None:
-                    print(listedData)
 
                     serviceName = listedData[1]
-                    print("Name", serviceName)
                     serviceId = addService(conn, cur, serviceCode, serviceName)
 
                 serviceValue = listedData[2]
@@ -46,41 +45,17 @@ def loadDetali(conn, cur):
                 sumOfPoints = listedData[6]
                 sumOfEuros = listedData[7]
 
-                newData = [serviceTime, serviceId[0], serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros]
+                dataExists = cur.execute('SELECT * FROM amb_detali WHERE laikotarpis = ? AND pasl_kodas = ? AND balo_verte = ? AND baz_kaina_balais = ? AND pac_skaicius = ? AND apm_pasl_skaicius = ?', (serviceTime, serviceId[0], serviceValue, servicePrice, patientsCount, servicesCount)).fetchone()
 
+                if not dataExists:
+                    try:
+                        cur.execute('INSERT INTO amb_detali(laikotarpis, pasl_kodas, balo_verte, baz_kaina_balais, pac_skaicius, apm_pasl_skaicius, suma_balais, suma_eurais) VALUES(?,?,?,?,?,?,?,?)', (serviceTime, serviceId[0], float(serviceValue), float(servicePrice), int(patientsCount), int(servicesCount), float(sumOfPoints), float(sumOfEuros)))
 
-                dataExists = cur.execute('SELECT * FROM amb_detali WHERE laikotarpis = ? AND pasl_kodas = ?', (serviceTime, serviceId)).fetchone()
-                #
-                # except:
-                #     dataExists = False
-                print(dataExists)
+                        print("Inserted into amb_detali")
+                        conn.commit()
+                    except Exception as e:
+                        logging.error(traceback.format_exc())
 
-                if dataExists:
-                    oldData = list(dataExists)[3:]
-                    newDataUpdate = newData[3:]
-
-                    for i in range(len(newDataUpdate)):
-                        if int(newDataUpdate[i]) != oldData[i]:
-
-                            try:
-                                cur.execute("UPDATE amb_detali SET balo_verte = ?, baz_kaina_balais=?, pac_skaicius=?, apm_pasl_skaicius=?, suma_balais=?, suma_eurais=? WHERE laikotarpis = ? AND pasl_kodas = ?", (serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros, serviceTime, serviceCode))
-
-                                print("Record Updated!")
-
-                                conn.commit()
-                            except Exception as e:
-                                logging.error(traceback.format_exc())
-                        else:
-                            print("Data identical. Continue")
-                            continue
-
-                elif not dataExists:
-
-                    cur.execute('INSERT INTO amb_detali(laikotarpis, pasl_kodas, balo_verte, baz_kaina_balais, pac_skaicius, apm_pasl_skaicius, suma_balais, suma_eurais) VALUES(?,?,?,?,?,?,?,?)', (serviceTime, serviceId[0], serviceValue, servicePrice, patientsCount, servicesCount, sumOfPoints, sumOfEuros))
-
-                    conn.commit()
-
-                    print("Inserted into amb_detali")
 
             except:
                 print("*************Bad line!**************************")

@@ -1,29 +1,43 @@
 import codecs
 import csv
+import os
 import re
 import traceback
 import logging
 from addServiceAndSpecialist import addService, addSpecialist
 import dumpDataToJson
 
-def loadZiniarastis(conn, cur):
-    file = codecs.open(input('Enter file name: '), encoding='ISO-8859-13')
-    fileReader = csv.reader(file)
+def loadZiniarastis(conn, cur, dTime):
+    file = input('Enter file name: ')
+
+    file_name, file_extension = os.path.splitext(file)
+
+    if file_extension == '.CSV':
+        fileHandle = codecs.open(file, encoding='ISO-8859-13')
+        fileReader = csv.reader(fileHandle)
+    else:
+        print("Bad file type!")
+
     fileLength = len(list(fileReader))
 
-    file.seek(0)
+    dataTime = 'perm'
+    dataTable = 'ziniarastis'
+
+    if dTime != 'perm':
+        cur.execute("DELETE FROM tmp_ziniarastis")
+        conn.commit()
+        dataTime = dTime
+        dataTable = 'tmp_ziniarastis'
+
+
+    fileHandle.seek(0)
     tlk = (list(fileReader)[-1][0].split(";")[0])
 
-    file.seek(0)
-    # lastRowDate = list(fileReader)[-1][2].split(';')[1].split('-')
-    #
-    # date = datetime.date(int(lastRowDate[0]), int(lastRowDate[1]), int(lastRowDate[2]))
+    fileHandle.seek(0)
     date = list(fileReader)[-1][2].split(';')[2]
 
-
-    file.seek(0)
-    fileReader = csv.reader(file)
-
+    fileHandle.seek(0)
+    fileReader = csv.reader(fileHandle)
 
     for row in fileReader:
 
@@ -63,31 +77,16 @@ def loadZiniarastis(conn, cur):
             consult_for_dispan = rowData[13]
             consult_for_emerg = rowData[14]
 
-            newData = [pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk]
-
             dataExists = cur.execute('SELECT * FROM ziniarastis WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
 
-            if dataExists:
-                oldData = list(dataExists)[3:]
-                newDataUpdate = newData[2:-2]
+            if dataExists is None:
+                try:
+                    cur.execute("INSERT INTO "+dataTable+"(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))
 
-                for i in range(len(newDataUpdate)-2):
-                    if int(newDataUpdate[i]) != oldData[i]:
-
-                        try:
-                            cur.execute("UPDATE ziniarastis SET viso_apsilan = ?, viso_123_be_N=?, del_ligos_L=?, profilak_Pr=?, mokami_is_viso=?, mokami_is_ju_Pr=?, kons_viso=?, kons_be_siun=?, kons_del_disp=?, kons_but_pag=? WHERE paslauga = ? AND specialistas = ? AND data =? AND tlk = ?", (all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, pasl_id[0], spec_id[0], date, tlk))
-
-                            print("Record Updated!")
-
-                            conn.commit()
-                        except Exception as e:
-                            logging.error(traceback.format_exc())
-                    else:
-                        print("Data identical. Continue")
-                        continue
-            elif not dataExists:
-                cur.execute("INSERT INTO ziniarastis(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))
-
-                print("Added to ziniarastis")
-
-                conn.commit()
+                    print("Added to ziniarastis")
+                    conn.commit()
+                except Exception as e:
+                        logging.error(traceback.format_exc())
+            else:
+                print("Data already exists. Continue")
+                continue
