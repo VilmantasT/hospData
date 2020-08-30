@@ -2,31 +2,36 @@ import codecs
 import csv
 import os
 import re
+from pathlib import Path
 import traceback
 import logging
 from addServiceAndSpecialist import addService, addSpecialist
 import dumpDataToJson
 
 def loadZiniarastis(conn, cur, dTime):
+
+    data_folder = Path("/media/vilmantas/BAD89498D894548B/Projektai/Ataskaitos/hospData/Files")
+
     file = input('Enter file name: ')
 
     file_name, file_extension = os.path.splitext(file)
 
+    file_to_open = data_folder / file
+    print(file_to_open)
+
     if file_extension == '.CSV':
-        fileHandle = codecs.open(file, encoding='ISO-8859-13')
+        fileHandle = codecs.open(file_to_open, encoding='ISO-8859-13')
         fileReader = csv.reader(fileHandle)
     else:
         print("Bad file type!")
 
     fileLength = len(list(fileReader))
 
-    dataTime = 'perm'
     dataTable = 'ziniarastis'
 
     if dTime != 'perm':
         cur.execute("DELETE FROM tmp_ziniarastis")
         conn.commit()
-        dataTime = dTime
         dataTable = 'tmp_ziniarastis'
 
 
@@ -44,7 +49,6 @@ def loadZiniarastis(conn, cur, dTime):
         if fileReader.line_num == 1 or fileReader.line_num > fileLength - 2:
             continue
         else:
-
             rowData = ",".join(row).replace(',', ' ').split(';')
 
             pasl_kodas = re.compile(r'(\d\d\d\d)').search(rowData[0]).groups()[0]
@@ -77,13 +81,14 @@ def loadZiniarastis(conn, cur, dTime):
             consult_for_dispan = rowData[13]
             consult_for_emerg = rowData[14]
 
-            dataExists = cur.execute('SELECT * FROM ziniarastis WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
+
+            dataExists = cur.execute('SELECT * FROM '+ dataTable +' WHERE paslauga = ? AND specialistas = ? AND data = ? AND tlk = ?', (pasl_id[0], spec_id[0], date, tlk)).fetchone()
 
             if dataExists is None:
                 try:
                     cur.execute("INSERT INTO "+dataTable+"(paslauga, specialistas, viso_apsilan, viso_123_be_N, del_ligos_L, profilak_Pr, mokami_is_viso, mokami_is_ju_Pr, kons_viso, kons_be_siun, kons_del_disp, kons_but_pag, data, tlk) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (pasl_id[0], spec_id[0], all_visits, all_123_w_N, for_illness_L, profil_Pr, all_payed, profil_from_payed, all_consult, consult_w_disp, consult_for_dispan, consult_for_emerg, date, tlk))
 
-                    print("Added to ziniarastis")
+                    print("Added to "+dataTable)
                     conn.commit()
                 except Exception as e:
                         logging.error(traceback.format_exc())
