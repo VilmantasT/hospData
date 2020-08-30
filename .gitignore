@@ -3,3 +3,4 @@ hospitalData.sqlite
 *.js
 dumpDataToJson.py
 *.html
+*.pyc
